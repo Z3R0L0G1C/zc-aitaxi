@@ -1,0 +1,1 @@
+"use strict";(()=>{var m=n=>new Promise(r=>setTimeout(r,n)),o=[];function e(n){return Math.floor(Math.random()*n)}o[0]=new Array;o[0].Debug=!0;o[0].TaxiCabHash="taxi";o[0].CommandCoolDownTime=1;o[0].CostPerUnit=.05;o[1]=["g_m_m_armgoon_01","g_m_m_korboss_01","mp_m_avongoon"];})();
