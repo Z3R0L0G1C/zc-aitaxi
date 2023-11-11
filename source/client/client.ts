@@ -123,6 +123,7 @@ on("zc-aitaxi:client:EnterTaxi", async(data:any) => {
 
 function StartRoute() {
   if (GetFirstBlipInfoId(8) !== 0) {
+    DestinationSet = true;
     const waypointBlip = GetFirstBlipInfoId(8);
     const [coordsx, coordsy, coordsz] = GetBlipInfoIdCoord(waypointBlip);
     const playercoords:number[] = GetEntityCoords(PlayerPedId(), true);
@@ -177,6 +178,7 @@ on("onResourceStop", (resourceName:string) => {
   RemoveBlip(MissionBlip);
   thisTaxi = null;
   thisDriver = null;
+  DestinationSet = false;
   }
 
 async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:number,z:number, stopDistance:number, speed:number, final:boolean) {  
