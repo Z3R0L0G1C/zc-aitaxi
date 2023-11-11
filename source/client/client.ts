@@ -185,7 +185,7 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
     TaskVehicleDriveToCoordLongrange(ped, vehicle, x,y,z, speed, 786603, stopDistance);
     SetDriveTaskDrivingStyle(ped, 786603);
     SetDriverAggressiveness(ped, 0.0);
-    SetEntityMaxSpeed(vehicle,(35/2.236936))
+    SetEntityMaxSpeed(vehicle,(45/2.236936))
     if (final) {
 
       var CheckForSpeedTick = setTick(async() => {
@@ -199,7 +199,7 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
       var [PedPosX, PedPosY, PedPosZ] = GetEntityCoords(PlayerPedId());
       await Delay(1000);
       if(FasterRide) {
-        SetEntityMaxSpeed(vehicle,(65/2.236936)) //Faster driving
+        SetEntityMaxSpeed(vehicle,(75/2.236936)) //Faster driving
         SetDriveTaskDrivingStyle(ped, 537133887);
       }
        // console.log("Distance to destination : " + GetDistanceBetweenCoords(PedPosX, PedPosY, PedPosZ, x, y, z, true));
@@ -219,7 +219,7 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
      
     });
   } else {
- StartIdleTimer(ped, vehicle);
+//  StartIdleTimer(ped, vehicle);
   }
 }
 
@@ -230,10 +230,11 @@ async function StartIdleTimer(ped:number, vehicle:number) {
         NeedBlip = false;
         if(Config[0]["Debug"]){console.log("Cleaning up entities due to idleness");}
         await RemoveEntitiesAfterRide();
+        if(DestinationSet) {
+          clearTick(IdleTimer);
+        }
     });
-  if(DestinationSet) {
-    clearTick(IdleTimer);
-  }
+  
 }
 
 
