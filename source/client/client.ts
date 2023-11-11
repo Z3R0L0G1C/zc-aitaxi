@@ -17,6 +17,7 @@ var BlipCreated:boolean = false;
 var FasterRide:boolean;
 var FareCost:number = 0;
 var DestinationSet:boolean = false;
+var FarePayed:boolean = false;
 
 
 BlipTick = setTick( async()=> {
@@ -204,7 +205,11 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
       }
        // console.log("Distance to destination : " + GetDistanceBetweenCoords(PedPosX, PedPosY, PedPosZ, x, y, z, true));
       if(GetDistanceBetweenCoords(PedPosX, PedPosY, PedPosZ, x, y, z, false) < stopDistance + 5) {
-        emitNet("zc-aitaxi:server:PayFare", GetPlayerServerId(PlayerId()), FareCost);
+        if(!FarePayed) {
+          emitNet("zc-aitaxi:server:PayFare", GetPlayerServerId(PlayerId()), FareCost);
+          FarePayed = true;
+        }
+        
         await Delay(3000);
         TaskLeaveVehicle(PlayerPedId(), vehicle, 16);
         if(!IsPedInAnyVehicle(PlayerPedId(), false)){
