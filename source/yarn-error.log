@@ -1,0 +1,61 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\tracy\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js install
+
+PATH: 
+  C:\Program Files\Oculus\Support\oculus-runtime;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Python310\Scripts\;C:\Python310\;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\dotnet\;C:\Program Files\Common Files\Autodesk Shared\;C:\Program Files (x86)\Autodesk\Backburner\;C:\Program Files\Git\cmd;C:\Program Files\Git LFS;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\PuTTY\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Docker\Docker\resources\bin;c:\program files (x86)\iracing\d3dgear;C:\Program Files\Go\bin;C:\Users\tracy\AppData\Local\Microsoft\WindowsApps;C:\Users\tracy\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\tracy\AppData\Local\GitHubDesktop\bin;C:\Users\tracy\AppData\Roaming\npm;C:\Users\tracy\.dotnet\tools;C:\Users\tracy\go\bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.17.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/@citizenfx%2fServer: Not found
+      at Request.params.callback [as _callback] (C:\Users\tracy\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:66145:18)
+      at Request.self.callback (C:\Users\tracy\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:140890:22)
+      at Request.emit (node:events:513:28)
+      at Request.<anonymous> (C:\Users\tracy\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:141862:10)
+      at Request.emit (node:events:513:28)
+      at IncomingMessage.<anonymous> (C:\Users\tracy\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:141784:12)
+      at Object.onceWrapper (node:events:627:28)
+      at IncomingMessage.emit (node:events:525:35)
+      at endReadableNT (node:internal/streams/readable:1358:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
+
+npm manifest: 
+  {
+    "name": "ts-resource",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+      "build": "node ./prod.build.js",
+      "watch": "node ./dev.build.js"
+    },
+    "devDependencies": {
+      "@citizenfx/client": "^2.0.5887-1",
+      "@citizenfx/Server": "^2.0.5887-1",
+      "@types/node": "^18.7.18",
+      "esbuild": "^0.15.8",
+      "esbuild-plugin-import-glob": "^0.1.1",
+      "typescript": "^4.8.3"
+    },
+    "dependencies": {
+      "@overextended/oxmysql": "^1.1.3",
+      "copyfiles": "^2.4.1",
+      "esbuild-plugin-glob": "^2.1.0",
+      "esbuild-plugin-glob-import": "^0.2.0",
+      "fast-glob": "^3.2.12",
+      "glob": "^8.0.3",
+      "qbcore.js": "^1.5.1"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
