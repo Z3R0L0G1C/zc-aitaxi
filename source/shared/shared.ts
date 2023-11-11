@@ -11,9 +11,12 @@ function GetRandomInt(max:number) {
 //Start root configs
 Config[0] = new Array<any>;
 Config[0]["Debug"] = true;
+Config[0]["DebugCommands"] = true;
 Config[0]["TaxiCabHash"] = `taxi`;
-Config[0]["CommandCoolDownTime"] = 1; //Time in Seconds it will take after using the command before you can use it again.
-Config[0]["CostPerUnit"] = 0.050; 
+Config[0]["CashAsItem"] = true;
+Config[0]["CommandCoolDownTime"] = 5; //Time in minutes it will take after using the command before you can use it again.
+Config[0]["IdleTimer"] = 2; //Time in minutes it will take after for the cab to be considered idle after being called and it will wander and then despawn.
+Config[0]["CostPerUnit"] = 0.050; //Cost per unit the taxi driver will charge as fare at the end of the ride
 
 
 //Ped Hash List

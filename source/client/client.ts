@@ -18,6 +18,7 @@ var FasterRide:boolean;
 var FareCost:number = 0;
 var DestinationSet:boolean = false;
 
+
 BlipTick = setTick( async()=> {
   
   await Delay(5000);
@@ -53,6 +54,9 @@ BlipTick = setTick( async()=> {
 
 onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
   if(!OnCoolDown) {
+    OnCoolDown = true;
+    CoolDown();
+    
     var randomPed = GetRandomInt(Config[1].length);
     var [PedPosX, PedPosY, PedPosZ] = GetEntityCoords(GetPlayerPed(-1));
     var PedPosH = GetEntityHeading(GetPlayerPed(-1));
@@ -104,12 +108,12 @@ onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
 on("zc-aitaxi:client:EnterTaxi", async(data:any) => {
   var testTick:number;
    TaskEnterVehicle(PlayerPedId(), thisTaxi, 500, 2, 16, 0,0);
-   
     testTick = setTick(async()=>{
+
        await Delay(1500) 
        if (GetFirstBlipInfoId(8) !== 0) {
         clearTick(testTick);
-        StartRoute(data.src);
+        StartRoute();
        }
     });
 
@@ -117,7 +121,7 @@ on("zc-aitaxi:client:EnterTaxi", async(data:any) => {
     emit("QBCore:Notify", "Please set a GPS marker to start your ride!", "success")
 });
 
-function StartRoute(source) {
+function StartRoute() {
   if (GetFirstBlipInfoId(8) !== 0) {
     const waypointBlip = GetFirstBlipInfoId(8);
     const [coordsx, coordsy, coordsz] = GetBlipInfoIdCoord(waypointBlip);
@@ -142,6 +146,8 @@ function StartRoute(source) {
 }
 
 
+
+
 on("zc-aitaxi:client:StartRoute", async(data:any) => {
   
 });
@@ -153,7 +159,7 @@ on("onResourceStop", (resourceName:string) => {
       return;
     }
   
-    if(Config[0]["DebugEventTracking"]){console.log(`${resourceName} is shutting down, deleting entities!`);}
+    if(Config[0]["Debug"]){console.log(`${resourceName} is shutting down, deleting entities!`);}
     CleanUpOurEntities(OurCleanupList);
   });
 
@@ -171,8 +177,6 @@ on("onResourceStop", (resourceName:string) => {
   RemoveBlip(MissionBlip);
   thisTaxi = null;
   thisDriver = null;
-  OnCoolDown = true;
-  CoolDown();
   }
 
 async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:number,z:number, stopDistance:number, speed:number, final:boolean) {  
@@ -212,6 +216,21 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
       }
      
     });
+  } else {
+ StartIdleTimer(ped, vehicle);
+  }
+}
+
+async function StartIdleTimer(ped:number, vehicle:number) {
+    const IdleTimer = setTick(async() => {
+        await Delay(Config[0]["IdleTimer"] * 60000);
+        TaskVehicleDriveWander(ped,vehicle, 25.0, 447);
+        NeedBlip = false;
+        if(Config[0]["Debug"]){console.log("Cleaning up entities due to idleness");}
+        await RemoveEntitiesAfterRide();
+    });
+  if(DestinationSet) {
+    clearTick(IdleTimer);
   }
 }
 
