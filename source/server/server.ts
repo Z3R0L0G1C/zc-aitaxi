@@ -10,8 +10,9 @@ export const QBCore = Exports['qb-core'].GetCoreObject();
 RegisterCommand("taxi", async(source:number, args:any) => {
     if(Config[0]["Debug"]) {
         console.log("Player " + source + " called for a taxi.");
-        emitNet("zc-aitaxi:client:CreateCabAndDriver", source)
     }
+        emitNet("zc-aitaxi:client:CreateCabAndDriver", source)
+    
 }, false);
 
 if(Config[0]["DebugCommands"]) {

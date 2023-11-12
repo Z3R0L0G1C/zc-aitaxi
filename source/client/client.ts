@@ -101,9 +101,9 @@ function DebugLogVerbose(message:any) {
 onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
   DebugLog("Client Event Create Cab And Driver Called from the server for this client!");
   if(OnCoolDown) {
-    CoolDown();
     emit("QBCore:Notify", "You can't call another taxi yet....", "error", 2000);
   } else {
+    
     emit("QBCore:Notify", "A taxi will be there shortly...", "success", 2000);
     var randomPed = GetRandomInt(Config[1].length);
     var [PedPosX, PedPosY, PedPosZ] = GetEntityCoords(GetPlayerPed(-1));
