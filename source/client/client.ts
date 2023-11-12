@@ -4,20 +4,29 @@ import { Vector3 } from "fivem-js";
 const Exports = global.exports;
 export const QBCore = Exports['qb-core'].GetCoreObject();
 
-var thisTaxi:number;
-var thisDriver:number;
+var thisTaxi:any;
+var thisDriver:any;
 var OnCoolDown = false;
 var OurCleanupList:any = [];
 var NeedBlip:boolean;
 
 const clientID = PlayerId();
 var BlipTick:number;
+var testTick:number;
+var testForArrival:number;
+var CheckForSpeedTick:number;
+
+
 var MissionBlip:any;
 var BlipCreated:boolean = false;
 var FasterRide:boolean;
 var FareCost:number = 0;
 var DestinationSet:boolean = false;
 var FarePayed:boolean = false;
+var CheckForOccupationTick:number;
+var PlayerInTaxi:boolean;
+var IdleStarted:boolean = false;
+
 
 
 BlipTick = setTick( async()=> {
@@ -48,22 +57,60 @@ BlipTick = setTick( async()=> {
 
 });
 
+async function PlayerInTaxiEntryRange() {
+  CheckForOccupationTick = setTick(async() => {
+    
+    if(thisTaxi != null) {
+      if(!PlayerInTaxi) {
+      var PlayerPos:number[] = GetEntityCoords(PlayerPedId(), true);
+      var TaxiPos:number[] = GetEntityCoords(thisTaxi, true);
+      var DistanceToPlayer = GetDistanceBetweenCoords(PlayerPos[0], PlayerPos[1], PlayerPos[2], TaxiPos[0], TaxiPos[1], TaxiPos[2], false);
+        if(DistanceToPlayer < 5) {
+          if(IsControlJustPressed(0,23)) {
+              emit("zc-aitaxi:client:EnterTaxi", [clientID]);
+              PlayerInTaxi = true;
+          }
+        } 
 
+        if(DistanceToPlayer < 10) {
+          if(!IdleStarted){
+          StartIdleTimer(thisDriver, thisTaxi);
+          }
+        }
+      
+    } 
+  } 
+  if(thisTaxi!= null) {
+    if(IsPedInVehicle(PlayerPedId(), thisTaxi, false)) {
+      if(IsControlJustPressed(0,23)) {
+        PlayerInTaxi = false;
+    }
+    }
+}
+   
+  });
+}
 
-
-
+function DebugLog(message:any) {
+  if(Config[0]["Debug"]){console.log(message);}
+}
+function DebugLogVerbose(message:any) {
+  if(Config[0]["DebugVerbose"]){console.log(message);}
+}
 
 onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
-  if(!OnCoolDown) {
-    OnCoolDown = true;
+  DebugLog("Client Event Create Cab And Driver Called from the server for this client!");
+  if(OnCoolDown) {
     CoolDown();
-    
+    emit("QBCore:Notify", "You can't call another taxi yet....", "error", 2000);
+  } else {
+    emit("QBCore:Notify", "A taxi will be there shortly...", "success", 2000);
     var randomPed = GetRandomInt(Config[1].length);
     var [PedPosX, PedPosY, PedPosZ] = GetEntityCoords(GetPlayerPed(-1));
     var PedPosH = GetEntityHeading(GetPlayerPed(-1));
     if(Config[0]["Debug"]){console.log("Player Coords : (" + PedPosX + "," + PedPosY + "," + PedPosZ +","+ PedPosH +")");}
 
-     const [spawnFound, vehicleSpawnPrimer, nodeid]: [boolean, number[], number] = GetRandomVehicleNode(PedPosX, PedPosY, PedPosZ,75, false, false, false);
+     const [spawnFound, vehicleSpawnPrimer, nodeid]: [boolean, number[], number] = GetRandomVehicleNode(PedPosX, PedPosY, PedPosZ,125, false, false, false);
      const [spawnFound2, vehicleSpawn, vehicleHeading]: [boolean, number[], number] = GetClosestVehicleNodeWithHeading(vehicleSpawnPrimer[0], vehicleSpawnPrimer[1], vehicleSpawnPrimer[2], 0,3.0,0);
      const [targetFound, vehicleTarget]: [boolean, number[]] = GetPointOnRoadSide(PedPosX, PedPosY, PedPosZ, 0);
     if(Config[0]["Debug"]){console.log("Did we find a road? : " + spawnFound);console.log("Taxi Spawn Coords : (" + vehicleSpawn + ")");}
@@ -75,7 +122,9 @@ onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
       }
         if(thisTaxi == null) {
       thisTaxi = CreateVehicle(Config[0]["TaxiCabHash"], vehicleSpawn[0], vehicleSpawn[1], vehicleSpawn[2], vehicleHeading, true, true);
-        }
+        } else {DebugLog("There is already a taxi Entity ID: " + thisTaxi);}
+        
+
       SetVehicleDoorsLocked(thisTaxi,1);
       // Generate Taxi QB-Target /////////////////////////////////////////////////////////////////////////////////////////////
       Exports['qb-target'].AddTargetEntity(thisTaxi, {
@@ -95,20 +144,22 @@ onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
       OurCleanupList.push(thisTaxi);
       console.log("The spawned taxi has entity id : " + thisTaxi);
       thisDriver = CreatePedInsideVehicle(thisTaxi,4 , Config[1][randomPed], -1, true, true);
+      SetPedStayInVehicleWhenJacked(thisDriver, true);
       NeedBlip = true;
       OurCleanupList.push(thisDriver);
       DriveToCoordsAndWait(thisTaxi, thisDriver, vehicleTarget[0], vehicleTarget[1], vehicleTarget[2], 10, 10.0, false)
+      OnCoolDown = true;
+      PlayerInTaxiEntryRange();
       } else {
         emit("QBCore:Notify", "Can't find a way to you! Find a road!", "error")
       }    
-    } else {
-      emit("QBCore:Notify", "You can't call another taxi yet....", "error", 15)
     }
 });
 
 on("zc-aitaxi:client:EnterTaxi", async(data:any) => {
-  var testTick:number;
+ 
    TaskEnterVehicle(PlayerPedId(), thisTaxi, 500, 2, 16, 0,0);
+
     testTick = setTick(async()=>{
 
        await Delay(1500) 
@@ -163,6 +214,9 @@ on("onResourceStop", (resourceName:string) => {
   
     if(Config[0]["Debug"]){console.log(`${resourceName} is shutting down, deleting entities!`);}
     CleanUpOurEntities(OurCleanupList);
+    clearTick(testTick);
+    clearTick(CheckForSpeedTick);
+    clearTick(BlipTick);
   });
 
 
@@ -189,7 +243,8 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
     SetEntityMaxSpeed(vehicle,(45/2.236936))
     if (final) {
 
-      var CheckForSpeedTick = setTick(async() => {
+      CheckForSpeedTick = setTick(async() => {
+        await Delay(500);
         if(IsControlJustPressed(0,51)) {
           if(Config[0]["Debug"]){console.log("Faster Ride was requested");}
           FasterRide = true;
@@ -229,17 +284,21 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
 }
 
 async function StartIdleTimer(ped:number, vehicle:number) {
+    IdleStarted = true;
+    if(Config[0]["Debug"]){console.log("Taxi Idle timer started");}
     const IdleTimer = setTick(async() => {
         await Delay(Config[0]["IdleTimer"] * 60000);
+          if(!PlayerInTaxi) {
         TaskVehicleDriveWander(ped,vehicle, 25.0, 447);
         NeedBlip = false;
         if(Config[0]["Debug"]){console.log("Cleaning up entities due to idleness");}
         await RemoveEntitiesAfterRide();
-        if(DestinationSet) {
-          clearTick(IdleTimer);
-        }
+          } else {
+            if(Config[0]["Debug"]){console.log("Taxi Idle timer celared");}
+            clearTick(IdleTimer);
+            IdleStarted = false;
+          }
     });
-  
 }
 
 
