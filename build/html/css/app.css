@@ -1,0 +1,59 @@
+body {
+    background:transparent;
+
+}
+
+h1 {
+    font-size: 10rem;
+    color:red;
+}
+
+#meter-container {
+    position:absolute;
+    left: 82%;
+    top: 70%;
+    zoom:60%;
+    background-image: url('../images/taxi-meter-plate.png');
+    background-repeat:no-repeat;
+    width: 35rem;
+    height: 25rem;
+    display: none;
+}
+
+#arrivalIcon {
+    color:red;
+    position:absolute;
+    top:3.5rem;
+    left: 3.5rem;
+    font-size: 4rem;
+}
+
+#costPerUnit {
+    color: yellow;
+    position:absolute;
+    top:3.5rem;
+    left: 9rem;
+    font-size: 3rem;
+
+}
+
+#tripCost {
+    color: yellow;
+    position:absolute;
+    top:10rem;
+    left: 6rem;
+    font-size: 3rem;
+
+}
+
+#thisTripFlasher {
+    color: yellow;
+    position:absolute;
+    top:11rem;
+    left: 17rem;
+    font-size: 2rem;
+}
+
+#dollarSign {
+    font-size: 2rem;
+}

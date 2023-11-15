@@ -11,7 +11,14 @@ RegisterCommand("taxi", async(source:number, args:any) => {
     if(Config[0]["Debug"]) {
         console.log("Player " + source + " called for a taxi.");
     }
-        emitNet("zc-aitaxi:client:CreateCabAndDriver", source)
+    var PlayerData = QBCore.Functions.GetPlayer(source).PlayerData;
+    var cashOnPlayer = PlayerData.money["cash"];
+    if(cashOnPlayer > 5) {
+        emitNet("zc-aitaxi:client:CreateCabAndDriver", source);
+    } else {
+        emitNet("QBCore:Notify", source, "You don't have enough cash to call a taxi!", "error", 2000);
+    }
+        
     
 }, false);
 
@@ -19,6 +26,15 @@ if(Config[0]["DebugCommands"]) {
     RegisterCommand("taxiFareTest", (source:number, args:any) => {
          emit("zc-aitaxi:server:PayFare", source, args[0] )
     }, false);
+
+    RegisterCommand("taxiMeterTest", (source:number, args:any) => {
+            emitNet("zc-aitaxi:client:ShowMeter", source, args);
+    }, false);
+
+    RegisterCommand("taxiMeterUpdate", (source:number, args:any) => {
+        console.log(args);
+        emitNet("zc-aitaxi:client:UpdateMeterDisplay", source, args);
+}, false);
 }
 
 

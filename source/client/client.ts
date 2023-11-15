@@ -26,7 +26,7 @@ var FarePayed:boolean = false;
 var CheckForOccupationTick:number;
 var PlayerInTaxi:boolean;
 var IdleStarted:boolean = false;
-
+var IdleTimer:number;
 
 
 BlipTick = setTick( async()=> {
@@ -34,7 +34,7 @@ BlipTick = setTick( async()=> {
   await Delay(5000);
   if(NeedBlip === false) {
     if(BlipCreated){
-    console.log("NeedBlip is now false");
+    if(Config[0]["Debug"]){console.log("NeedBlip is now false");}
     SetBlipScale(MissionBlip,0)
     RemoveBlip(MissionBlip);
     BlipCreated = false;
@@ -42,7 +42,7 @@ BlipTick = setTick( async()=> {
   }
   if(NeedBlip === true){ 
       if(!BlipCreated) {
-    console.log("spawning blip");
+        if(Config[0]["Debug"]){console.log("spawning blip");}
     MissionBlip = AddBlipForEntity(thisTaxi);
     SetBlipSprite(MissionBlip, 198)
     SetBlipDisplay(MissionBlip, 4)
@@ -74,11 +74,27 @@ async function PlayerInTaxiEntryRange() {
 
         if(DistanceToPlayer < 10) {
           if(!IdleStarted){
+            if(Config[0]["Debug"]){console.log("Taxi Idle timer started due to distance check");}
           StartIdleTimer(thisDriver, thisTaxi);
           }
+        } else {
+          if(IdleTimer != 0) {
+          if(Config[0]["Debug"]){console.log("Taxi Idle timer celared due to distance check");}
+          clearTick(IdleTimer);
+          IdleTimer = 0;
+          IdleStarted = false;
+          }
         }
+
       
     } 
+  } else {
+    if(IdleTimer != 0) {
+      if(Config[0]["Debug"]){console.log("Taxi Idle timer celared due no taxi");}
+      clearTick(IdleTimer);
+      IdleTimer = 0;
+      IdleStarted = false;
+      }
   } 
   if(thisTaxi!= null) {
     if(IsPedInVehicle(PlayerPedId(), thisTaxi, false)) {
@@ -142,13 +158,14 @@ onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
       });
       // Generate Taxi QB-Target /////////////////////////////////////////////////////////////////////////////////////////////
       OurCleanupList.push(thisTaxi);
-      console.log("The spawned taxi has entity id : " + thisTaxi);
+      if(Config[0]["Debug"]){console.log("The spawned taxi has entity id : " + thisTaxi);}
       thisDriver = CreatePedInsideVehicle(thisTaxi,4 , Config[1][randomPed], -1, true, true);
       SetPedStayInVehicleWhenJacked(thisDriver, true);
       NeedBlip = true;
       OurCleanupList.push(thisDriver);
       DriveToCoordsAndWait(thisTaxi, thisDriver, vehicleTarget[0], vehicleTarget[1], vehicleTarget[2], 10, 10.0, false)
       OnCoolDown = true;
+      CoolDown();
       PlayerInTaxiEntryRange();
       } else {
         emit("QBCore:Notify", "Can't find a way to you! Find a road!", "error")
@@ -157,9 +174,9 @@ onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
 });
 
 on("zc-aitaxi:client:EnterTaxi", async(data:any) => {
- 
-   TaskEnterVehicle(PlayerPedId(), thisTaxi, 500, 2, 16, 0,0);
 
+   TaskEnterVehicle(PlayerPedId(), thisTaxi, 500, 2, 16, 0,0);
+      emit("zc-aitaxi:client:ShowMeter");
     testTick = setTick(async()=>{
 
        await Delay(1500) 
@@ -184,8 +201,8 @@ function StartRoute() {
     const z = coordsz;
     var distanceForFare = parseInt(GetDistanceBetweenCoords(playercoords[0], playercoords[1], playercoords[2], x,y,z, false).toString());
     FareCost = parseInt((Config[0]["CostPerUnit"] * distanceForFare).toString());
-
-    
+    var args = ["arrived",FareCost];
+    emit("zc-aitaxi:client:UpdateMeterDisplay", args);
 
       if(Config[0]["Debug"]) {console.log("The Distance Traveled for fare calculation is : " + distanceForFare);}
     const [locationFound, parkingPosition]: [boolean,number[]] = GetClosestVehicleNode(x, y, z, 1, 3.0, 0);
@@ -194,7 +211,7 @@ function StartRoute() {
     DriveToCoordsAndWait(thisTaxi, thisDriver, parkingPosition[0], parkingPosition[1], parkingPosition[2], 25.0, 55.0, true)
     emit("QBCore:Notify", "Starting GPS route! Please hang on to your seat!", "success")
 } else {
-    console.log("could not find a gps waypoint");
+  if(Config[0]["Debug"]){console.log("could not find a gps waypoint");}
 }
 }
 
@@ -241,10 +258,10 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
     SetDriveTaskDrivingStyle(ped, 786603);
     SetDriverAggressiveness(ped, 0.0);
     SetEntityMaxSpeed(vehicle,(45/2.236936))
+    var meterClosed = false;
     if (final) {
 
       CheckForSpeedTick = setTick(async() => {
-        await Delay(500);
         if(IsControlJustPressed(0,51)) {
           if(Config[0]["Debug"]){console.log("Faster Ride was requested");}
           FasterRide = true;
@@ -257,8 +274,10 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
       if(FasterRide) {
         SetEntityMaxSpeed(vehicle,(75/2.236936)) //Faster driving
         SetDriveTaskDrivingStyle(ped, 537133887);
+        SetDriverAggressiveness(ped, 1.0);
+        
       }
-       // console.log("Distance to destination : " + GetDistanceBetweenCoords(PedPosX, PedPosY, PedPosZ, x, y, z, true));
+      if(Config[0]["DebugVerbose"]){ console.log("Distance to destination : " + GetDistanceBetweenCoords(PedPosX, PedPosY, PedPosZ, x, y, z, true)); }
       if(GetDistanceBetweenCoords(PedPosX, PedPosY, PedPosZ, x, y, z, false) < stopDistance + 5) {
         if(!FarePayed) {
           emitNet("zc-aitaxi:server:PayFare", GetPlayerServerId(PlayerId()), FareCost);
@@ -266,6 +285,11 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
         }
         
         await Delay(3000);
+        if(meterClosed == false) {
+          emit("zc-aitaxi:client:ShowMeter");
+          meterClosed = true;
+        }
+        
         TaskLeaveVehicle(PlayerPedId(), vehicle, 16);
         if(!IsPedInAnyVehicle(PlayerPedId(), false)){
         TaskVehicleDriveWander(ped,vehicle, 25.0, 447);
@@ -285,8 +309,7 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
 
 async function StartIdleTimer(ped:number, vehicle:number) {
     IdleStarted = true;
-    if(Config[0]["Debug"]){console.log("Taxi Idle timer started");}
-    const IdleTimer = setTick(async() => {
+    IdleTimer = setTick(async() => {
         await Delay(Config[0]["IdleTimer"] * 60000);
           if(!PlayerInTaxi) {
         TaskVehicleDriveWander(ped,vehicle, 25.0, 447);
@@ -296,6 +319,7 @@ async function StartIdleTimer(ped:number, vehicle:number) {
           } else {
             if(Config[0]["Debug"]){console.log("Taxi Idle timer celared");}
             clearTick(IdleTimer);
+            IdleTimer = 0;
             IdleStarted = false;
           }
     });
@@ -306,4 +330,21 @@ async function CoolDown() {
   await Delay(Config[0]["CommandCoolDownTime"] * 60000);
   OnCoolDown = false;
 }
+
+
+onNet("zc-aitaxi:client:ShowMeter", () => {
+  SendNuiMessage(JSON.stringify({
+    type: 'open',
+    cost: Config[0]["CostPerUnit"],
+}));
+});
+
+onNet("zc-aitaxi:client:UpdateMeterDisplay", (args:any) => {
+  SendNuiMessage(JSON.stringify({
+    type: 'UpdateMeterDisplay',
+    args: args,
+    
+    
+}));
+});
 
