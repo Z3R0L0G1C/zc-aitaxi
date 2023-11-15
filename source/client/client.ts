@@ -251,6 +251,8 @@ on("onResourceStop", (resourceName:string) => {
   thisTaxi = null;
   thisDriver = null;
   DestinationSet = false;
+  FasterRide = false;
+  FarePayed = false;
   }
 
 async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:number,z:number, stopDistance:number, speed:number, final:boolean) {  
@@ -273,7 +275,7 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
       await Delay(1000);
       if(FasterRide) {
         SetEntityMaxSpeed(vehicle,(75/2.236936)) //Faster driving
-        SetDriveTaskDrivingStyle(ped, 537133887);
+        SetDriveTaskDrivingStyle(ped, 787004);
         SetDriverAggressiveness(ped, 1.0);
         
       }
@@ -296,6 +298,7 @@ async function DriveToCoordsAndWait(vehicle:number, ped:number, x:number,y:numbe
         NeedBlip = false;
         await RemoveEntitiesAfterRide();
         clearTick(testForArrival)
+        
         }
       } else {
        
