@@ -136,10 +136,16 @@ onNet("zc-aitaxi:client:CreateCabAndDriver", async () => {
           RequestModel(Config[0]["TaxiCabHash"]);
           RequestModel(Config[1][randomPed]);
       }
-        if(thisTaxi == null) {
-      thisTaxi = CreateVehicle(Config[0]["TaxiCabHash"], vehicleSpawn[0], vehicleSpawn[1], vehicleSpawn[2], vehicleHeading, true, true);
-        } else {DebugLog("There is already a taxi Entity ID: " + thisTaxi);}
+      if(thisTaxi == null) {
+        thisTaxi = CreateVehicle(Config[0]["TaxiCabHash"], vehicleSpawn[0], vehicleSpawn[1], vehicleSpawn[2], vehicleHeading, true, true);
+        if(GetResourceState("LegacyFuel") == "started") {
+        await Delay(10);
+        Exports["LegacyFuel"].SetFuel(thisTaxi, 100);
+        } else {
+          DebugLog("Legacy Fuel is not started.");
+        }
         
+      } else {DebugLog("There is already a taxi Entity ID: " + thisTaxi);}
 
       SetVehicleDoorsLocked(thisTaxi,1);
       // Generate Taxi QB-Target /////////////////////////////////////////////////////////////////////////////////////////////
